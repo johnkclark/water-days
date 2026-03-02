@@ -1,18 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import LogEntry from '@/components/LogEntry';
 import { supabase, type SwimLog } from '@/lib/supabase';
+import { useAuth } from '@/components/AuthProvider';
 
 export default function HistoryPage() {
+  const { user, userId, isLoading: authLoading } = useAuth();
+  const router = useRouter();
   const [logs, setLogs] = useState<SwimLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login');
+    }
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
+    if (!userId) return;
+
     async function fetchLogs() {
       const { data } = await supabase
         .from('swim_logs')
         .select('*')
+        .eq('user_id', userId)
         .order('date', { ascending: false });
 
       setLogs((data as SwimLog[]) || []);
@@ -20,7 +33,7 @@ export default function HistoryPage() {
     }
 
     fetchLogs();
-  }, []);
+  }, [userId]);
 
   const handleDelete = async (id: string) => {
     // Optimistic delete
@@ -33,13 +46,23 @@ export default function HistoryPage() {
 
     if (error) {
       // Refetch on error
+      if (!userId) return;
       const { data } = await supabase
         .from('swim_logs')
         .select('*')
+        .eq('user_id', userId)
         .order('date', { ascending: false });
       setLogs((data as SwimLog[]) || []);
     }
   };
+
+  if (authLoading || !user) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-water-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in mx-auto max-w-lg px-4 pt-4 pb-8">

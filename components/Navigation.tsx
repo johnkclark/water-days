@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/components/AuthProvider';
 
 const tabs = [
   {
@@ -72,6 +73,10 @@ const tabs = [
 
 export default function Navigation() {
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
+
+  // Don't show nav on login page or when not authenticated
+  if (!user || pathname === '/login') return null;
 
   return (
     <nav
@@ -100,6 +105,28 @@ export default function Navigation() {
             </Link>
           );
         })}
+
+        {/* Sign out button */}
+        <button
+          onClick={signOut}
+          className="flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium text-slate-400 transition-colors hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          <span>Sign out</span>
+        </button>
       </div>
     </nav>
   );

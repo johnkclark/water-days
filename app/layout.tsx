@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Navigation from '@/components/Navigation';
+import AuthProvider from '@/components/AuthProvider';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -40,8 +41,10 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.svg" />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <main className="min-h-screen pb-20">{children}</main>
-        <Navigation />
+        <AuthProvider>
+          <main className="min-h-screen pb-20">{children}</main>
+          <Navigation />
+        </AuthProvider>
         <script
           dangerouslySetInnerHTML={{
             __html: `

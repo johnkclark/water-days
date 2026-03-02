@@ -1,15 +1,18 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import DateSelector from '@/components/DateSelector';
 import CategoryButtons from '@/components/CategoryButtons';
 import { supabase, type SwimLog } from '@/lib/supabase';
 import { type CategoryKey } from '@/lib/constants';
 import { getToday, isInSeason } from '@/lib/utils';
+import { useAuth } from '@/components/AuthProvider';
 
 function QuickLogContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { user, userId, isLoading: authLoading } = useAuth();
   const dateParam = searchParams.get('date');
   const initialDate = dateParam && isInSeason(dateParam) ? dateParam : getToday();
 
@@ -22,29 +25,40 @@ function QuickLogContent() {
   const [showSaved, setShowSaved] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login');
+    }
+  }, [user, authLoading, router]);
+
   // Fetch existing log for selected date
   const fetchLog = useCallback(async (date: string) => {
+    if (!userId) return;
     setIsLoading(true);
     setConfirmDelete(false);
     const { data } = await supabase
       .from('swim_logs')
       .select('*')
       .eq('date', date)
+      .eq('user_id', userId)
       .maybeSingle();
 
     setExistingLog(data as SwimLog | null);
     setNote(data?.note || '');
     setNoteExpanded(!!data?.note);
     setIsLoading(false);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
-    fetchLog(selectedDate);
-  }, [selectedDate, fetchLog]);
+    if (userId) {
+      fetchLog(selectedDate);
+    }
+  }, [selectedDate, fetchLog, userId]);
 
   // Handle category selection — optimistic upsert
   const handleCategorySelect = async (category: CategoryKey) => {
-    if (isSaving) return;
+    if (isSaving || !userId) return;
     setIsSaving(true);
 
     // Optimistic update
@@ -66,8 +80,8 @@ function QuickLogContent() {
     const { data, error } = await supabase
       .from('swim_logs')
       .upsert(
-        { date: selectedDate, category, note: note || null },
-        { onConflict: 'date' }
+        { date: selectedDate, category, note: note || null, user_id: userId },
+        { onConflict: 'user_id,date' }
       )
       .select()
       .single();
@@ -121,6 +135,15 @@ function QuickLogContent() {
       setNote(logToRestore.note || '');
     }
   };
+
+  // Show loading while auth is resolving
+  if (authLoading || !user) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-water-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in mx-auto max-w-lg px-4 pt-2">

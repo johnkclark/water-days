@@ -1,21 +1,34 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import StatsCards from '@/components/StatsCards';
 import CalendarHeatmap from '@/components/CalendarHeatmap';
 import { supabase, type SwimLog } from '@/lib/supabase';
 import { SEASON_START, SEASON_END } from '@/lib/constants';
 import { calculateStats } from '@/lib/utils';
+import { useAuth } from '@/components/AuthProvider';
 
 export default function DashboardPage() {
+  const { user, userId, isLoading: authLoading } = useAuth();
+  const router = useRouter();
   const [logs, setLogs] = useState<SwimLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login');
+    }
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
+    if (!userId) return;
+
     async function fetchLogs() {
       const { data } = await supabase
         .from('swim_logs')
         .select('*')
+        .eq('user_id', userId)
         .gte('date', SEASON_START)
         .lte('date', SEASON_END)
         .order('date', { ascending: true });
@@ -25,9 +38,17 @@ export default function DashboardPage() {
     }
 
     fetchLogs();
-  }, []);
+  }, [userId]);
 
   const stats = calculateStats(logs);
+
+  if (authLoading || !user) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-water-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in mx-auto max-w-lg px-4 pt-4 pb-8">
