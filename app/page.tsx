@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import DateSelector from '@/components/DateSelector';
 import CategoryButtons from '@/components/CategoryButtons';
-import { supabase, type SwimLog } from '@/lib/supabase';
+import { type SwimLog } from '@/lib/supabase';
 import { type CategoryKey } from '@/lib/constants';
 import { getToday, isInSeason } from '@/lib/utils';
 import { useAuth } from '@/components/AuthProvider';
@@ -12,7 +12,7 @@ import { useAuth } from '@/components/AuthProvider';
 function QuickLogContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user, userId, isLoading: authLoading } = useAuth();
+  const { user, userId, supabase, isLoading: authLoading } = useAuth();
   const dateParam = searchParams.get('date');
   const initialDate = dateParam && isInSeason(dateParam) ? dateParam : getToday();
 
@@ -48,7 +48,7 @@ function QuickLogContent() {
     setNote(data?.note || '');
     setNoteExpanded(!!data?.note);
     setIsLoading(false);
-  }, [userId]);
+  }, [userId, supabase]);
 
   useEffect(() => {
     if (userId) {

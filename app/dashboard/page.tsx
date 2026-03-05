@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import StatsCards from '@/components/StatsCards';
 import CalendarHeatmap from '@/components/CalendarHeatmap';
-import { supabase, type SwimLog } from '@/lib/supabase';
+import { type SwimLog } from '@/lib/supabase';
 import { SEASON_START, SEASON_END } from '@/lib/constants';
 import { calculateStats } from '@/lib/utils';
 import { useAuth } from '@/components/AuthProvider';
 
 export default function DashboardPage() {
-  const { user, userId, isLoading: authLoading } = useAuth();
+  const { user, userId, supabase, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [logs, setLogs] = useState<SwimLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +38,7 @@ export default function DashboardPage() {
     }
 
     fetchLogs();
-  }, [userId]);
+  }, [userId, supabase]);
 
   const stats = calculateStats(logs);
 

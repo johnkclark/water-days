@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import LogEntry from '@/components/LogEntry';
-import { supabase, type SwimLog } from '@/lib/supabase';
+import { type SwimLog } from '@/lib/supabase';
 import { useAuth } from '@/components/AuthProvider';
 
 export default function HistoryPage() {
-  const { user, userId, isLoading: authLoading } = useAuth();
+  const { user, userId, supabase, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [logs, setLogs] = useState<SwimLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,7 +33,7 @@ export default function HistoryPage() {
     }
 
     fetchLogs();
-  }, [userId]);
+  }, [userId, supabase]);
 
   const handleDelete = async (id: string) => {
     // Optimistic delete

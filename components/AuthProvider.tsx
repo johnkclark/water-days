@@ -10,24 +10,23 @@ import {
 import type { User } from '@supabase/supabase-js';
 import { createSupabaseBrowserClient } from '@/lib/auth';
 
+import type { SupabaseClient } from '@supabase/supabase-js';
+
 type AuthContextType = {
   user: User | null;
   userId: string | null;
   isLoading: boolean;
+  supabase: SupabaseClient;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  userId: null,
-  isLoading: true,
-  signInWithGoogle: async () => {},
-  signOut: async () => {},
-});
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 }
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
@@ -73,6 +72,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         user,
         userId: user?.id ?? null,
         isLoading,
+        supabase,
         signInWithGoogle,
         signOut,
       }}
