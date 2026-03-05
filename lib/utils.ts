@@ -2,7 +2,6 @@ import {
   SEASON_START,
   SEASON_END,
   TOTAL_SEASON_DAYS,
-  TARGET_PERCENTAGE,
 } from './constants';
 import type { SwimLog } from './supabase';
 
@@ -130,7 +129,7 @@ export type SeasonStats = {
 };
 
 /** Calculate all dashboard statistics from swim logs */
-export function calculateStats(logs: SwimLog[]): SeasonStats {
+export function calculateStats(logs: SwimLog[], targetPercentage: number): SeasonStats {
   const today = getToday();
 
   // Days elapsed: from season start to today (or season end if season is over)
@@ -146,7 +145,7 @@ export function calculateStats(logs: SwimLog[]): SeasonStats {
   const currentPercentage = daysElapsed > 0 ? totalSwims / daysElapsed : 0;
 
   // Expected swims by now
-  const expectedSwims = daysElapsed * TARGET_PERCENTAGE;
+  const expectedSwims = daysElapsed * targetPercentage;
 
   // Pace delta (positive = ahead)
   const paceDelta = Math.round(totalSwims - expectedSwims);

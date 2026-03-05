@@ -1,13 +1,15 @@
 'use client';
 
-import { TARGET_SWIM_DAYS, TOTAL_SEASON_DAYS } from '@/lib/constants';
+import { TOTAL_SEASON_DAYS } from '@/lib/constants';
 import type { SeasonStats } from '@/lib/utils';
 
 type StatsCardsProps = {
   stats: SeasonStats;
+  targetDays: number;
+  onEditGoal: () => void;
 };
 
-export default function StatsCards({ stats }: StatsCardsProps) {
+export default function StatsCards({ stats, targetDays, onEditGoal }: StatsCardsProps) {
   const {
     totalSwims,
     daysElapsed,
@@ -88,24 +90,32 @@ export default function StatsCards({ stats }: StatsCardsProps) {
         </div>
         {paceDelta < 0 && daysElapsed > 0 && (
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-            Need {Math.ceil((TARGET_SWIM_DAYS - totalSwims) / ((TOTAL_SEASON_DAYS - daysElapsed) || 1) * 5)} of next 5 days to get back on track
+            Need {Math.ceil((targetDays - totalSwims) / ((TOTAL_SEASON_DAYS - daysElapsed) || 1) * 5)} of next 5 days to get back on track
           </p>
         )}
       </div>
 
       {/* Projected Finish + Streaks */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-800">
+        <button
+          onClick={onEditGoal}
+          className="rounded-2xl bg-white p-4 text-left shadow-sm transition-colors active:bg-slate-50 dark:bg-slate-800 dark:active:bg-slate-700"
+        >
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
             Projected
           </p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100">
             {projectedTotal}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500">
-            of {TARGET_SWIM_DAYS} target
+          <p className="flex items-center gap-1 text-xs text-water-500">
+            <span className="underline decoration-dotted underline-offset-2">
+              of {targetDays} target
+            </span>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M7 1l2 2-6 6H1V7z" />
+            </svg>
           </p>
-        </div>
+        </button>
         <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-slate-800">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
             Streak

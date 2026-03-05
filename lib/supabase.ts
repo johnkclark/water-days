@@ -10,3 +10,9 @@ export type SwimLog = {
   created_at: string;
   updated_at: string;
 };
+
+export type UserGoal = {
+  user_id: string;
+  target_days: number;
+  updated_at: string;
+};

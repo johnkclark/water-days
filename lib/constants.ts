@@ -1,8 +1,20 @@
 export const SEASON_START = '2026-02-25';
 export const SEASON_END = '2026-11-19';
 export const TOTAL_SEASON_DAYS = 268;
-export const TARGET_PERCENTAGE = 0.50;
-export const TARGET_SWIM_DAYS = 134;
+export const SEASON_WEEKS = TOTAL_SEASON_DAYS / 7; // ~38.29
+
+// Defaults for users who haven't set a custom goal
+export const DEFAULT_TARGET_DAYS = 134;
+export const DEFAULT_TARGET_PERCENTAGE = 0.50;
+
+/** Derive all goal representations from a target_days value */
+export function deriveGoalRepresentations(targetDays: number) {
+  return {
+    targetDays,
+    targetPercentage: targetDays / TOTAL_SEASON_DAYS,
+    targetDaysPerWeek: targetDays / SEASON_WEEKS,
+  };
+}
 
 export type CategoryKey = 'pool' | 'ocean' | 'lake_river' | 'other';
 
